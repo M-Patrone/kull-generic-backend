@@ -109,7 +109,7 @@ public class DatabaseOperations : IDocumentFilter
     public class DocumentFilterContext { }
 #endif
 
-    public async Task ApplyAsync(OpenApiDocument swaggerDoc, DocumentFilterContext context)
+    public async Task ApplyAsync(OpenApiDocument swaggerDoc)
     {
         using var scope = serviceProvider.CreateScope();
         var dbConnection = scope.ServiceProvider.GetRequiredService<DbConnection>();
@@ -208,9 +208,9 @@ public class DatabaseOperations : IDocumentFilter
         }
 
     }
-    public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
+    public void Apply(OpenApiDocument swaggerDoc)
     {
-        AsyncHelpers.RunSync(() => ApplyAsync(swaggerDoc, context));
+        AsyncHelpers.RunSync(() => ApplyAsync(swaggerDoc));
     }
 
 
@@ -421,7 +421,7 @@ public class DatabaseOperations : IDocumentFilter
     public void Apply(SwaggerDocument swaggerDoc, SchemaRegistry schemaRegistry, IApiExplorer apiExplorer)
     {
         var doc = new OpenApiDocument();
-        Apply(doc, new DocumentFilterContext());
+        Apply(doc);
         var strW = new System.IO.StringWriter();
         doc.SerializeAsV2(new Microsoft.OpenApi.Writers.OpenApiJsonWriter(strW));
         string json = strW.ToString();
