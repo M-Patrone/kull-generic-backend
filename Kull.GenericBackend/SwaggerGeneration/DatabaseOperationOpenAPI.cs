@@ -1,75 +1,33 @@
-#if NET9_0 == false 
-using Kull.GenericBackend.Middleware;
-using Microsoft.OpenApi.Models;
-using System.Collections.Generic;
-using System.Linq;
-using System.Data.Common;
-using Kull.GenericBackend.Common;
+# if NET9_0
 using Kull.DatabaseMetadata;
-using Kull.GenericBackend.Serialization;
-using Kull.GenericBackend.Parameters;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Any;
+using Kull.GenericBackend.Common;
 using Kull.GenericBackend.Config;
-using System;
-using System.Threading.Tasks;
+using Kull.GenericBackend.Middleware;
+using Kull.GenericBackend.Parameters;
+using Kull.GenericBackend.Serialization;
 using Kull.GenericBackend.Utils;
-#if NETFX
-using Unity;
-using Swashbuckle.Swagger;
-using Kull.MvcCompat;
-using System.Web.Http.Description;
-using IWebHostEnvironment = Kull.MvcCompat.IHostingEnvironment;
-#else
-using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-#endif
-#if NETSTD2
-using IWebHostEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
-#endif
+using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Extensions;
+using Microsoft.OpenApi.Models;
+using System;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kull.GenericBackend.SwaggerGeneration;
-#if NET48
-public class DatabaseOperationWrap : IDocumentFilter
-{
-    private readonly IUnityContainer? container = null;
-
-    [Obsolete]
-    public DatabaseOperationWrap()
-    {
-    }
-    public DatabaseOperationWrap(IUnityContainer container)
-    {
-        this.container = container;
-    }
-    public void Apply(SwaggerDocument swaggerDoc, SchemaRegistry schemaRegistry, IApiExplorer apiExplorer)
-    {
-        if (container != null)
-        {
-            var realFilter = container.Resolve<IDocumentFilter>();
-            realFilter.Apply(swaggerDoc, schemaRegistry, apiExplorer);
-        }
-        else
-        {
-            IDocumentFilter realFilter = (IDocumentFilter)System.Web.Mvc.DependencyResolver.Current.GetService(typeof(IDocumentFilter));
-            realFilter.Apply(swaggerDoc, schemaRegistry, apiExplorer);
-        }
-    }
-}
-#endif
-
-/// <summary>
-/// The filter for swashbuckle that applies the Infos from the SP's
-/// </summary>
-public class DatabaseOperations : IDocumentFilter
+public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
 {
     private readonly IReadOnlyCollection<Entity> entities;
     private readonly SPMiddlewareOptions sPMiddlewareOptions;
     private readonly SwaggerFromSPOptions options;
     private readonly SqlHelper sqlHelper;
-    private readonly ILogger<DatabaseOperations> logger;
+    private readonly ILogger<DatabaseOperationOpenAPI> logger;
     private readonly SerializerResolver serializerResolver;
     private readonly ParameterProvider parametersProvider;
     private readonly NamingMappingHandler namingMappingHandler;
@@ -78,11 +36,11 @@ public class DatabaseOperations : IDocumentFilter
     private readonly ResponseDescriptor responseDescriptor;
     private readonly IServiceProvider serviceProvider;
 
-    public DatabaseOperations(
+    public DatabaseOperationOpenAPI(
      SPMiddlewareOptions sPMiddlewareOptions,
      SwaggerFromSPOptions options,
      SqlHelper sqlHelper,
-     ILogger<DatabaseOperations> logger,
+     ILogger<DatabaseOperationOpenAPI   > logger,
      ParameterProvider parametersProvider,
      SerializerResolver serializerResolver,
      NamingMappingHandler namingMappingHandler,
@@ -105,10 +63,10 @@ public class DatabaseOperations : IDocumentFilter
         this.namingMappingHandler = namingMappingHandler;
         entities = configProvider.Entities;
     }
-
-#if NET48
-    public class DocumentFilterContext { }
-#endif
+    public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+    {
+        return ApplyAsync(document);
+    }
 
     public async Task ApplyAsync(OpenApiDocument swaggerDoc)
     {
@@ -208,18 +166,6 @@ public class DatabaseOperations : IDocumentFilter
             }
         }
 
-    }
-    public void Apply(OpenApiDocument swaggerDoc)
-    {
-        AsyncHelpers.RunSync(() => ApplyAsync(swaggerDoc));
-    }
-
-
-    private IReadOnlyCollection<Parameters.WebApiParameter> GetBodyOrQueryStringParameters(IEnumerable<WebApiParameter> inputParameters, Entity ent, Method method)
-    {
-        return inputParameters
-            .Where(s => s.WebApiName != null && !ent.ContainsPathParameter(s.WebApiName))
-            .ToArray();
     }
 
     private void WriteJsonSchema(OpenApiSchema parameterSchema, IReadOnlyCollection<Parameters.WebApiParameter> parameters,
@@ -324,7 +270,6 @@ public class DatabaseOperations : IDocumentFilter
 
 
 
-
     private async Task WriteBodyPath(DbConnection dbConnection, OpenApiOperation operation, Entity entity, OperationType operationType, Method method)
     {
         if (operation.Tags == null)
@@ -417,38 +362,12 @@ public class DatabaseOperations : IDocumentFilter
             });
         }
     }
-    //DELETE JUST FOR COMPILATION (TODO)
-    public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
+    private IReadOnlyCollection<Parameters.WebApiParameter> GetBodyOrQueryStringParameters(IEnumerable<WebApiParameter> inputParameters, Entity ent, Method method)
     {
-        AsyncHelpers.RunSync(() => ApplyAsync(swaggerDoc));
+        return inputParameters
+            .Where(s => s.WebApiName != null && !ent.ContainsPathParameter(s.WebApiName))
+            .ToArray();
     }
 
-#if NET48
-    public void Apply(SwaggerDocument swaggerDoc, SchemaRegistry schemaRegistry, IApiExplorer apiExplorer)
-    {
-        var doc = new OpenApiDocument();
-        Apply(doc);
-        var strW = new System.IO.StringWriter();
-        doc.SerializeAsV2(new Microsoft.OpenApi.Writers.OpenApiJsonWriter(strW));
-        string json = strW.ToString();
-        var settings = new Newtonsoft.Json.JsonSerializerSettings();
-        settings.MetadataPropertyHandling = Newtonsoft.Json.MetadataPropertyHandling.Ignore;
-        var docOld = Newtonsoft.Json.JsonConvert.DeserializeObject<SwaggerDocument>(json, settings);
-        if (docOld != null && docOld.paths != null)
-        {
-            foreach (var p in docOld.paths)
-            {
-                swaggerDoc.paths.Add(p.Key, p.Value);
-            }
-        }
-        if (docOld != null && docOld.definitions != null)
-        {
-            foreach (var p in docOld.definitions)
-            {
-                swaggerDoc.definitions.Add(p.Key, p.Value);
-            }
-        }
-    }
-#endif
 }
 #endif

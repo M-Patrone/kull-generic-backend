@@ -53,10 +53,15 @@ public abstract class TestStartupBase
             {
                 cf.AddSystemParameter("[Procedure with - strange name].ImASpecialParameter", (c) => true);
             });
-        services.AddSwaggerGen(c =>
+        //services.AddSwaggerGen(c =>
+        //{
+        //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+        //    c.AddGenericBackend();
+        //});
+
+        services.AddOpenApi(options =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-            c.AddGenericBackend();
+            options.AddGenericBackend();
         });
         if (!DbProviderFactories.TryGetFactory("Microsoft.Data.SqlClient", out var _))
             DbProviderFactories.RegisterFactory("Microsoft.Data.SqlClient", Microsoft.Data.SqlClient.SqlClientFactory.Instance);
