@@ -65,7 +65,17 @@ namespace Kull.GenericBackend.Standalone
                 var constr = conf["ConnectionStrings:DefaultConnection"];
                 return Kull.Data.DatabaseUtils.GetConnectionFromEFString(constr, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             });
-           
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -77,6 +87,7 @@ namespace Kull.GenericBackend.Standalone
             }
 
             app.UseRouting();
+            app.UseCors("AllowAll");
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapOpenApi("/swagger/v1/swagger.json");
