@@ -19,6 +19,21 @@ namespace Kull.GenericBackend.Standalone
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            var hostEnv = (IWebHostEnvironment)services.FirstOrDefault(f => f.ServiceType == typeof(IWebHostEnvironment)).ImplementationInstance;
+            var config = (IConfiguration)services.First(f => f.ServiceType == typeof(IConfiguration)).ImplementationInstance;
+            // Not nice, but it seems as of .net core 3 this is required
+            if (config == null)
+            {
+                config = new ConfigurationBuilder()
+                    .AddJsonFile("appsettings.json", true, true)
+                    .Build();
+            }
+            var constr = config["ConnectionStrings:DefaultConnection"];
+            constr = constr.Replace("{{workdir}}", hostEnv.ContentRootPath);
+
+
+            Utils.DatabaseUtils.SetupDb(hostEnv.ContentRootPath, constr);
+
             services.AddRouting();
             services.AddMvc(config =>
             {
@@ -35,10 +50,11 @@ namespace Kull.GenericBackend.Standalone
                 })
                 .AddFileSupport()
                 .AddSystemParameters();
-            services.AddSwaggerGen(c =>
+            services.AddOpenApi(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-                c.AddGenericBackend();
+                options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0;
+
+                options.AddGenericBackend();
             });
             if (!DbProviderFactories.TryGetFactory("Microsoft.Data.SqlClient", out var _))
                 DbProviderFactories.RegisterFactory("Microsoft.Data.SqlClient", Microsoft.Data.SqlClient.SqlClientFactory.Instance);
@@ -48,6 +64,7 @@ namespace Kull.GenericBackend.Standalone
                 var constr = conf["ConnectionStrings:DefaultConnection"];
                 return Kull.Data.DatabaseUtils.GetConnectionFromEFString(constr, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             });
+           
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,18 +75,16 @@ namespace Kull.GenericBackend.Standalone
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseSwagger(o =>
-            {
-                // For compat with ng-swagger-gen on client. You can use ng-openapi-gen if set to false
-                o.SerializeAsV2 = false;
-            });
-
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
+                // Verschiebe MapOpenApi hierher
+                endpoints.MapOpenApi("/swagger/v1/swagger.json");
+
                 app.UseGenericBackend(endpoints);
                 endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
             });
+
 
             app.UseStaticFiles();
             app.UseDefaultFiles();
