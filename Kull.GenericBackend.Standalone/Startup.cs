@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
+using AspNetCore.Scalar;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -78,13 +79,19 @@ namespace Kull.GenericBackend.Standalone
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                // Verschiebe MapOpenApi hierher
                 endpoints.MapOpenApi("/swagger/v1/swagger.json");
+
 
                 app.UseGenericBackend(endpoints);
                 endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
             });
 
+
+            app.UseScalar(options =>
+            {
+                options.UseSpecUrl("/swagger/v1/swagger.json");
+                options.UseTheme(Theme.Solarized);
+            });
 
             app.UseStaticFiles();
             app.UseDefaultFiles();

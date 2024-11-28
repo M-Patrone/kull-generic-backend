@@ -103,7 +103,6 @@ public abstract class TestStartupBase
         app.UseRouting();
         app.UseEndpoints(endpoints =>
         {
-            // Verschiebe MapOpenApi hierher
             endpoints.MapOpenApi("/swagger/v1/swagger.json");
 
             app.UseGenericBackend(endpoints);
