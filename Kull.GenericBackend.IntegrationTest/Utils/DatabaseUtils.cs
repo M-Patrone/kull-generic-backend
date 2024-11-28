@@ -19,7 +19,7 @@ public static class DatabaseUtils
         {
             SetUpTestContainer().GetAwaiter().GetResult();
 
-            if (CheckIfMDFFileExists(System.IO.Path.Combine(dataPath, "GenericBackendTest.mdf")))
+            if (CheckIfMDFFileExists("/var/opt/mssql/data/GenericBackendTest.mdf"))
             {
                 string testCommand = "SELECT VersionNr FrOM  dbo.TestDbVersion";
                 int version;
@@ -63,13 +63,12 @@ public static class DatabaseUtils
             [GenericBackendTest]
         ON PRIMARY (
            NAME=GenericBackendTest,
-           FILENAME = '{0}\GenericBackendTest.mdf'
+           FILENAME = '/var/opt/mssql/data/GenericBackendTest.mdf'
         )
         LOG ON (
             NAME = GenericBackendTest_log,
-            FILENAME = '{0}\GenericBackendTest.ldf'
-        )",
-                    dataPath
+            FILENAME = '/var/opt/mssql/data/GenericBackendTest.ldf'
+        )"
                 );
 
                 SqlCommand command = new SqlCommand(sql, connection);
@@ -138,9 +137,9 @@ public static class DatabaseUtils
                 .WithWaitStrategy(
                     Wait.ForUnixContainer()
                         .UntilCommandIsCompleted("/opt/mssql-tools18/bin/sqlcmd","-C","-l","60", "-S", "localhost,1433", "-U", "sa", "-P", "abcDEF123","-Q", "SELECT 1;"))
+                .WithReuse(true)
                 .Build();
             await container.StartAsync();
-            var a = "adfjkadldjf";
         }catch(Exception e)
         {
             Console.WriteLine($"Could not start the sql server for testing: message={e.Message} and error={e.ToString()}");
