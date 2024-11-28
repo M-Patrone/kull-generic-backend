@@ -3,6 +3,8 @@ using System.Linq;
 using System;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using DotNet.Testcontainers.Builders;
+using System.Threading.Tasks;
+using Testcontainers.MsSql;
 
 namespace Kull.GenericBackend.IntegrationTest.Utils;
 
@@ -15,7 +17,7 @@ public static class DatabaseUtils
     {
         lock (setupObj)
         {
-            SetUpTestContainer();
+            SetUpTestContainer().GetAwaiter().GetResult();
 
             if (CheckIfMDFFileExists(System.IO.Path.Combine(dataPath, "GenericBackendTest.mdf")))
             {
@@ -36,7 +38,7 @@ public static class DatabaseUtils
 
                 if (version < expectedVersion)
                 {
-                    using (SqlConnection connection = new SqlConnection(@"Server=localhost,1433;User ID=sa;Password=abcDEF123#;TrustServerCertificate=True;Encrypt=false;"))
+                    using (SqlConnection connection = new SqlConnection(@"Server=localhost,1433;User ID=sa;Password=abcDEF123;TrustServerCertificate=True;Encrypt=false;"))
                     {
                         connection.Open();
                         var cmdDropCon = new SqlCommand("ALTER DATABASE [GenericBackendTest] SET SINGLE_USER WITH ROLLBACK IMMEDIATE", connection);
@@ -52,7 +54,7 @@ public static class DatabaseUtils
             }
 
 
-            using (SqlConnection connection = new SqlConnection(@"Server=localhost,1433;User ID=sa;Password=abcDEF123#;TrustServerCertificate=True;Encrypt=false"))
+            using (SqlConnection connection = new SqlConnection(@"Server=localhost,1433;User ID=sa;Password=abcDEF123;TrustServerCertificate=True;Encrypt=false"))
             {
                 connection.Open();
 
@@ -107,7 +109,7 @@ public static class DatabaseUtils
         SELECT cast(@result as bit)
         ", dataPath);
         bool fileExists;
-        using (SqlConnection connection = new SqlConnection(@"Server=localhost,1433;User ID=sa;Password=abcDEF123#;TrustServerCertificate=True;Encrypt=false"))
+        using (SqlConnection connection = new SqlConnection(@"Server=localhost,1433;User ID=sa;Password=abcDEF123;TrustServerCertificate=True;Encrypt=false"))
         {
             connection.Open();
             var cmd = connection.CreateCommand();
@@ -123,24 +125,22 @@ public static class DatabaseUtils
 
     }
 
-    private static void SetUpTestContainer()
+    private static async Task SetUpTestContainer()
     {
         try
         {
-            var container = new ContainerBuilder()
+            var container = new MsSqlBuilder()
                 .WithImage("mcr.microsoft.com/mssql/server:2022-CU15-GDR2-ubuntu-22.04")
                 .WithName("sql-server-test")
                 .WithPortBinding(1433, false)
                 .WithEnvironment("ACCEPT_EULA", "Y")
-                .WithEnvironment("MSSQL_SA_PASSWORD", "abcDEF123#")
-                //not working right now
-                //.WithWaitStrategy(
-                //    Wait.ForUnixContainer()
-                //        .UntilCommandIsCompleted("bash", "-c",
-                //            "until /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'abcDEF123#' -Q 'SELECT 1'; do echo 'Waiting for SQL Server...'; sleep 1; done"))
+                .WithEnvironment("MSSQL_SA_PASSWORD", "abcDEF123")
+                .WithWaitStrategy(
+                    Wait.ForUnixContainer()
+                        .UntilCommandIsCompleted("/opt/mssql-tools18/bin/sqlcmd","-C","-l","60", "-S", "localhost,1433", "-U", "sa", "-P", "abcDEF123","-Q", "SELECT 1;"))
                 .Build();
-
-            container.StartAsync().GetAwaiter().GetResult();
+            await container.StartAsync();
+            var a = "adfjkadldjf";
         }catch(Exception e)
         {
             Console.WriteLine($"Could not start the sql server for testing: message={e.Message} and error={e.ToString()}");
