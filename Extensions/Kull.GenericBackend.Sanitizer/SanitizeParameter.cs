@@ -6,7 +6,7 @@ using Kull.GenericBackend.Common;
 using Kull.GenericBackend.Parameters;
 using Kull.GenericBackend.SwaggerGeneration;
 using Microsoft.AspNetCore.Http;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Kull.GenericBackend.Sanitizer;
 

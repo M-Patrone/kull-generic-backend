@@ -18,7 +18,7 @@ using Kull.DatabaseMetadata;
 using Kull.GenericBackend.Common;
 using Kull.GenericBackend.Serialization;
 using Kull.GenericBackend.Parameters;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Kull.GenericBackend.Filter;
 using System.Net.Http.Headers;
 using System.Net.Mime;

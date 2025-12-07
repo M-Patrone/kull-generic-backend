@@ -7,7 +7,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/Kull-AG/kull-generic-backend</RepositoryUrl>
-    <LangVersion>10.0</LangVersion>
+    <LangVersion>12.0</LangVersion>
     <Nullable>enable</Nullable>
     <Copyright>Kull AG</Copyright>
     <IncludeSymbols>true</IncludeSymbols>
@@ -27,7 +27,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFrameworks>net48;net9.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
@@ -36,10 +36,7 @@
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net48' ">
     <DefineConstants>$(DefineConstants);NETFX</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' != 'net6.0' ">
-    <DefineConstants>$(DefineConstants);NEWTONSOFTJSON</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' != 'net8.0' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' != 'net8.0' Or '$(TargetFramework)' != 'net10.0'">
     <DefineConstants>$(DefineConstants);NEWTONSOFTJSON</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
@@ -50,17 +47,17 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Kull.Data" Version="8.0.1" />
-    <PackageReference Include="Kull.DatabaseMetadata" Version="1.7.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
+    <PackageReference Include="Kull.Data" Version="10.1.0" />
+    <PackageReference Include="Kull.DatabaseMetadata" Version="1.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.100">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.OpenApi" Version="1.6.22" />
+    <PackageReference Include="Microsoft.OpenApi" Version="3.0.1" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' != 'net48' ">
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0-rc.2.24474.3" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework)=='net48'">
     <PackageReference Include="Swashbuckle.Core" Version="5.6.0" />
@@ -69,8 +66,9 @@
     <Reference Include="System.Web.Http" />
     <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.3.0" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework)=='net9.0'">
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  <ItemGroup Condition="$(TargetFramework)=='net10.0' Or $(TargetFramework)=='net8.0'">
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+<FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework)=='netstandard2.0'">   
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.1.1" />

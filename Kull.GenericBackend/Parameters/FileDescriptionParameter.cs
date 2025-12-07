@@ -3,7 +3,7 @@ using HttpContext = System.Web.HttpContextBase;
 #else
 using Microsoft.AspNetCore.Http;
 #endif
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Kull.GenericBackend.Parameters;
 

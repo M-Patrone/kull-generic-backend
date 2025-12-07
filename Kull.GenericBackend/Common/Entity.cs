@@ -4,7 +4,7 @@ using System.Linq;
 #if NEWTONSOFTJSON
 using Newtonsoft.Json.Serialization;
 #endif
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Kull.GenericBackend.Config;
 
 namespace Kull.GenericBackend.Common;

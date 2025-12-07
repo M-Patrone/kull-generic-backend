@@ -1,6 +1,6 @@
 using Kull.Data;
 using Kull.GenericBackend.Common;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;

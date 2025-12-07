@@ -10,7 +10,7 @@ using IRouteBuilder = Microsoft.AspNetCore.Routing.IEndpointRouteBuilder;
 using System;
 using System.Collections.Generic;
 using Kull.GenericBackend.Common;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Kull.GenericBackend.Config;
 using System.Linq;
 using System.Threading.Tasks;

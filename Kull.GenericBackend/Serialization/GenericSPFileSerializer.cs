@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Kull.GenericBackend.Common;
 using Kull.GenericBackend.SwaggerGeneration;
 using Kull.GenericBackend.Error;

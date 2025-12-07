@@ -1,5 +1,5 @@
 using Kull.GenericBackend.Config;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System;
 using System.Collections.Generic;
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Xunit;
 using System.Linq;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Kull.GenericBackend.IntegrationTest;
 

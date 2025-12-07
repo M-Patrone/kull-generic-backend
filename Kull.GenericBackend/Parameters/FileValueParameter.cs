@@ -4,7 +4,7 @@ using Kull.MvcCompat;
 #else
 using Microsoft.AspNetCore.Http;
 #endif
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System;
 using System.Collections.Generic;
 using System.Configuration;

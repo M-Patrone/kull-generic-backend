@@ -1,6 +1,6 @@
 #if NET9_0 == false 
 using Kull.GenericBackend.Middleware;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System.Collections.Generic;
 using System.Linq;
 using System.Data.Common;
@@ -8,8 +8,8 @@ using Kull.GenericBackend.Common;
 using Kull.DatabaseMetadata;
 using Kull.GenericBackend.Serialization;
 using Kull.GenericBackend.Parameters;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi;
 using Kull.GenericBackend.Config;
 using System;
 using System.Threading.Tasks;

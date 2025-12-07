@@ -1,5 +1,5 @@
 using Kull.GenericBackend.SwaggerGeneration;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System;
 using System.Collections.Generic;
 using System.Text;
