@@ -95,9 +95,9 @@ public static class OpenApiServiceCollectionExtensions
                 new Middleware.SPMiddlewareOptions();
         services.TryAddSingleton(opts);
         services.TryAddSingleton(swaggerFromSPOptions ?? new SwaggerGeneration.SwaggerFromSPOptions());
-#if NETFX && !NET9_0
+#if NETFX && !NET8_0_OR_GREATER
         services.AddTransient<Swashbuckle.Swagger.IDocumentFilter, DatabaseOperations>();
-#elif NET9_0 
+#elif NET8_0_OR_GREATER 
        services.AddTransient<IOpenApiDocumentTransformer, DatabaseOperationOpenAPI>();
 #endif
         return new GenericBackendBuilder(services);

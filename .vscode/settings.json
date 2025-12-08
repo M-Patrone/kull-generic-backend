@@ -1,4 +1,5 @@
 {
     "npm.enableScriptExplorer": false,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "dotnet.preferCSharpExtension": true
 }

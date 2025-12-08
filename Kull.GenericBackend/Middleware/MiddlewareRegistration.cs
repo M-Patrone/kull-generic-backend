@@ -14,6 +14,7 @@ using Microsoft.OpenApi;
 using Kull.GenericBackend.Config;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Net.Http;
 #if NET48
 using System.Web;
 #endif
@@ -106,19 +107,19 @@ public class MiddlewareRegistration
                 IEndpointConventionBuilder endpoint;
                 switch (method.Key)
                 {
-                    case OperationType.Get:
+                    case HttpMethod.Get:
                         endpoint = routeBuilder.MapGet(GetUrlForMvcRouting(ent), requestDelegate);
                         break;
-                    case OperationType.Put:
+                    case HttpMethod.Put:
                         endpoint = routeBuilder.MapPut(GetUrlForMvcRouting(ent), requestDelegate);
                         break;
-                    case OperationType.Post:
+                    case HttpMethod.Post:
                         endpoint = routeBuilder.MapPost(GetUrlForMvcRouting(ent), requestDelegate);
                         break;
-                    case OperationType.Delete:
+                    case HttpMethod.Delete:
                         endpoint = routeBuilder.MapDelete(GetUrlForMvcRouting(ent), requestDelegate);
                         break;
-                    case OperationType.Patch:
+                    case HttpMethod.Patch:
                         endpoint = routeBuilder.Map(GetUrlForMvcRouting(ent), context =>
                         {
                             if (context.Request.Method.ToUpper() == "PATCH")

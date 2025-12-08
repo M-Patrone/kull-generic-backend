@@ -1,4 +1,4 @@
-# if NET9_0
+# if NET8_0_OR_GREATER
 using Kull.DatabaseMetadata;
 using Kull.GenericBackend.Common;
 using Kull.GenericBackend.Config;
@@ -11,12 +11,11 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi;
-using Microsoft.OpenApi;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -82,7 +81,7 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
             {
                 OpenApiPathItem openApiPathItem = new OpenApiPathItem();
                 if (openApiPathItem.Operations == null)
-                    openApiPathItem.Operations = new Dictionary<OperationType, OpenApiOperation>();
+                    openApiPathItem.Operations = new Dictionary<HttpMethod, OpenApiOperation>();
 
                 foreach (var method in ent.Methods)
                 {
@@ -270,7 +269,7 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
 
 
 
-    private async Task WriteBodyPath(DbConnection dbConnection, OpenApiOperation operation, Entity entity, OperationType operationType, Method method)
+    private async Task WriteBodyPath(DbConnection dbConnection, OpenApiOperation operation, Entity entity, HttpMethod operationType, Method method)
     {
         if (operation.Tags == null)
             operation.Tags = new List<OpenApiTag>();
@@ -307,7 +306,7 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
                 context.OutputObjectTypeName != null || sPMiddlewareOptions.AlwaysWrapJson);
 
 
-        if (operationType != OperationType.Get && inputParameters.Any(p => p.WebApiName != null && !entity.ContainsPathParameter(p.WebApiName)))
+        if (operationType != HttpMethod.Get && inputParameters.Any(p => p.WebApiName != null && !entity.ContainsPathParameter(p.WebApiName)))
         {
             if (operation.RequestBody == null) operation.RequestBody = new OpenApiRequestBody();
             operation.RequestBody.Required = true;
@@ -326,7 +325,7 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
             });
         }
         if (operation.Parameters == null) operation.Parameters = new List<OpenApiParameter>();
-        if (operationType == OperationType.Get)
+        if (operationType == HttpMethod.Get)
         {
             foreach (var item in inputParameters.Where(p => p.WebApiName != null && !entity.ContainsPathParameter(p.WebApiName)))
             {

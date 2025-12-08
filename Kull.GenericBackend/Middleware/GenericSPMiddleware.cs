@@ -23,6 +23,7 @@ using Kull.GenericBackend.Filter;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using Kull.GenericBackend.Execution;
+using System.Net.Http;
 
 namespace Kull.GenericBackend.Middleware;
 
@@ -141,7 +142,7 @@ public class GenericSPMiddleware : IGenericSPMiddleware
 
     protected async Task HandleGetRequest(HttpContext context, Entity ent, IGenericSPSerializer serializer)
     {
-        var method = ent.Methods[OperationType.Get];
+        var method = ent.Methods[HttpMethod.Get];
         var request = context.Request;
 
         Dictionary<string, object> queryParameters;

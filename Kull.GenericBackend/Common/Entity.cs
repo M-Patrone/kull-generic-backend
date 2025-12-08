@@ -6,6 +6,7 @@ using Newtonsoft.Json.Serialization;
 #endif
 using Microsoft.OpenApi;
 using Kull.GenericBackend.Config;
+using System.Net.Http;
 
 namespace Kull.GenericBackend.Common;
 
@@ -24,7 +25,7 @@ public class Entity
     /// <summary>
     /// A map containing all methods of this entity
     /// </summary>
-    public IReadOnlyDictionary<OperationType, Method> Methods { get; }
+    public IReadOnlyDictionary<HttpMethod, Method> Methods { get; }
 
     /// <summary>
     /// The tag for Open Api
@@ -88,13 +89,13 @@ public class Entity
             .ToArray();
     }
 
-    public Entity(string urlTemplate, IReadOnlyDictionary<OperationType, Method> methods)
+    public Entity(string urlTemplate, IReadOnlyDictionary<HttpMethod, Method> methods)
         : this(urlTemplate, methods, null, null)
     {
 
     }
 
-    internal Entity(string urlTemplate, IReadOnlyDictionary<OperationType, Method> methods, string? tag,
+    internal Entity(string urlTemplate, IReadOnlyDictionary<HttpMethod, Method> methods, string? tag,
             IReadOnlyDictionary<string, object?>? restParameters)
     {
         UrlParts = urlTemplate.Replace("|", ":").Split('/').Select(s => s.Trim()).ToArray();
@@ -114,7 +115,7 @@ public class Entity
 
     public Method GetMethod(string httpMethod)
     {
-        if (!Enum.TryParse(httpMethod, true, out OperationType operationType))
+        if (!Enum.TryParse(httpMethod, true, out HttpMethod operationType))
         {
             throw new ArgumentException("Key must be a Http Method");
         }

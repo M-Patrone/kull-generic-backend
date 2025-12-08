@@ -4,6 +4,7 @@ using Microsoft.OpenApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 
 namespace Kull.GenericBackend.SwaggerGeneration;
 
@@ -63,15 +64,15 @@ public class CodeConvention
     {
 
         var operationType = method.HttpMethod;
-        return operationType == OperationType.Post &&
+        return operationType == HttpMethod.Post &&
               (method.DbObject.Name.StartsWith("spAddUpdate") ||
                method.DbObject.Name.StartsWith("sp_AddUpdate") ||
                method.DbObject.Name.EndsWith("_AddUpdate")
               ) ? "AddUpdate" :
-          operationType == OperationType.Post ? "Add" :
-          operationType == OperationType.Put ? "Update" :
-          operationType == OperationType.Delete ? "Delete" :
-          operationType == OperationType.Get ? "Get" :
+          operationType == HttpMethod.Post ? "Add" :
+          operationType == HttpMethod.Put ? "Update" :
+          operationType == HttpMethod.Delete ? "Delete" :
+          operationType == HttpMethod.Get ? "Get" :
           ToCamelCase(operationType.ToString());
 
     }

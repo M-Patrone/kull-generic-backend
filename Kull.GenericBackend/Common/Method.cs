@@ -2,6 +2,7 @@ using Kull.GenericBackend.Config;
 using Microsoft.OpenApi;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 
 namespace Kull.GenericBackend.Common;
 
@@ -13,7 +14,7 @@ public record Method
     /// <summary>
     /// The Http Method
     /// </summary>
-    public OperationType HttpMethod { get; init; }
+    public HttpMethod HttpMethod { get; init; }
 
 
     public Data.DBObjectName DbObject { get; init; }
@@ -41,13 +42,13 @@ public record Method
     public IReadOnlyCollection<string> JsonFields { get; init; } = Array.Empty<string>();
     public IReadOnlyCollection<string>? Policies { get; init; }
 
-    public Method(OperationType httpMethod, string sp)
+    public Method(HttpMethod httpMethod, string sp)
         : this(httpMethod, sp, DatabaseMetadata.DBObjectType.StoredProcedure, null, null, null)
     {
 
     }
 
-    private Method(OperationType httpMethod, string dbObjectName,
+    private Method(HttpMethod httpMethod, string dbObjectName,
           Kull.DatabaseMetadata.DBObjectType dBObjectType,
         string? operationId = null,
         string? operationName = null,
@@ -62,7 +63,7 @@ public record Method
         HttpMethod = httpMethod;
         DbObject = dbObjectName;
         DbObjectType = dBObjectType;
-        if (dBObjectType != DatabaseMetadata.DBObjectType.StoredProcedure && httpMethod != OperationType.Get)
+        if (dBObjectType != DatabaseMetadata.DBObjectType.StoredProcedure && httpMethod != HttpMethod.Get)
         {
             throw new InvalidOperationException("Cannot use method other then GET for " + dBObjectType + " (object " + dbObjectName + ")");
         }
@@ -88,7 +89,7 @@ public record Method
 
     internal static Method GetFromConfig(string key, object value)
     {
-        if (!Enum.TryParse(key, true, out OperationType operationType))
+        if (!Enum.TryParse(key, true, out HttpMethod operationType))
         {
             throw new ArgumentException("Key must be a Http Method");
         }

@@ -2,6 +2,7 @@ using Kull.GenericBackend.Common;
 using Microsoft.OpenApi;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Net.Http;
 
 namespace Kull.GenericBackend.Test
 {
@@ -18,10 +19,10 @@ namespace Kull.GenericBackend.Test
 
         private static void TestNaming(string url, string expected)
         {
-            Method method = new Method(OperationType.Get, "");
-            var ent = new Entity(url, new Dictionary<OperationType, Method>()
+            Method method = new HttpMethod("Get");
+            var ent = new Entity(url, new Dictionary<HttpMethod, Method>()
             {
-                { OperationType.Get, method }
+                { HttpMethod.Get, method }
             });
             var conv = new SwaggerGeneration.CodeConvention();
             var displayString = conv.GetTag(ent, method);

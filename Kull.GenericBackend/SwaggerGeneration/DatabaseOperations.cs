@@ -14,6 +14,8 @@ using Kull.GenericBackend.Config;
 using System;
 using System.Threading.Tasks;
 using Kull.GenericBackend.Utils;
+using System.Net.Http;
+
 #if NETFX
 using Unity;
 using Swashbuckle.Swagger;
@@ -63,7 +65,7 @@ public class DatabaseOperationWrap : IDocumentFilter
 /// <summary>
 /// The filter for swashbuckle that applies the Infos from the SP's
 /// </summary>
-public class DatabaseOperations : IDocumentFilter
+public class DatabaseOperations : IOpenApiDocumentTransforer 
 {
     private readonly IReadOnlyCollection<Entity> entities;
     private readonly SPMiddlewareOptions sPMiddlewareOptions;
@@ -124,7 +126,7 @@ public class DatabaseOperations : IDocumentFilter
             {
                 OpenApiPathItem openApiPathItem = new OpenApiPathItem();
                 if (openApiPathItem.Operations == null)
-                    openApiPathItem.Operations = new Dictionary<OperationType, OpenApiOperation>();
+                    openApiPathItem.Operations = new Dictionary<HttpMethod, OpenApiOperation>();
 
                 foreach (var method in ent.Methods)
                 {
@@ -325,7 +327,7 @@ public class DatabaseOperations : IDocumentFilter
 
 
 
-    private async Task WriteBodyPath(DbConnection dbConnection, OpenApiOperation operation, Entity entity, OperationType operationType, Method method)
+    private async Task WriteBodyPath(DbConnection dbConnection, OpenApiOperation operation, Entity entity,HttpMethod operationType, Method method)
     {
         if (operation.Tags == null)
             operation.Tags = new List<OpenApiTag>();
@@ -362,7 +364,7 @@ public class DatabaseOperations : IDocumentFilter
                 context.OutputObjectTypeName != null || sPMiddlewareOptions.AlwaysWrapJson);
 
 
-        if (operationType != OperationType.Get && inputParameters.Any(p => p.WebApiName != null && !entity.ContainsPathParameter(p.WebApiName)))
+        if (operationType != HttpMethod.Get && inputParameters.Any(p => p.WebApiName != null && !entity.ContainsPathParameter(p.WebApiName)))
         {
             if (operation.RequestBody == null) operation.RequestBody = new OpenApiRequestBody();
             operation.RequestBody.Required = true;
@@ -381,7 +383,7 @@ public class DatabaseOperations : IDocumentFilter
             });
         }
         if (operation.Parameters == null) operation.Parameters = new List<OpenApiParameter>();
-        if (operationType == OperationType.Get)
+        if (operationType == HttpMethod.Get)
         {
             foreach (var item in inputParameters.Where(p => p.WebApiName != null && !entity.ContainsPathParameter(p.WebApiName)))
             {
