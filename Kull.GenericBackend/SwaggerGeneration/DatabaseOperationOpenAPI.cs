@@ -19,8 +19,11 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
+//https://devblogs.microsoft.com/dotnet/dotnet9-openapi/
 namespace Kull.GenericBackend.SwaggerGeneration;
-public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
+//https://github.com/dotnet/dotnet/blob/main/src/aspnetcore/src/OpenApi/src/Transformers/IOpenApiDocumentTransformer.cs
+//seems to have problem with NET8
+public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer 
 {
     private readonly IReadOnlyCollection<Entity> entities;
     private readonly SPMiddlewareOptions sPMiddlewareOptions;

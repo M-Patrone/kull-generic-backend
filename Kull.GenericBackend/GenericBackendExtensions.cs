@@ -19,7 +19,7 @@ using IRouteBuilder = Microsoft.AspNetCore.Routing.IEndpointRouteBuilder;
 #endif
 namespace Kull.GenericBackend;
 
-#if NET9_0 == false 
+#if NET8_0_OR_GREATER == false 
 
 /// <summary>
 /// Extension method for Swashbuckle

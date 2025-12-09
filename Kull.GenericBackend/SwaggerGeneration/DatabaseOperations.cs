@@ -1,4 +1,4 @@
-#if NET9_0 == false 
+#if NET8_0_OR_GREATER == false 
 using Kull.GenericBackend.Middleware;
 using Microsoft.OpenApi;
 using System.Collections.Generic;
@@ -8,7 +8,6 @@ using Kull.GenericBackend.Common;
 using Kull.DatabaseMetadata;
 using Kull.GenericBackend.Serialization;
 using Kull.GenericBackend.Parameters;
-using Microsoft.OpenApi;
 using Microsoft.OpenApi;
 using Kull.GenericBackend.Config;
 using System;

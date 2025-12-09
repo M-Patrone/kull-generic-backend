@@ -107,19 +107,19 @@ public class MiddlewareRegistration
                 IEndpointConventionBuilder endpoint;
                 switch (method.Key)
                 {
-                    case HttpMethod.Get:
+                   case HttpMethod m when m == HttpMethod.Get:
                         endpoint = routeBuilder.MapGet(GetUrlForMvcRouting(ent), requestDelegate);
                         break;
-                    case HttpMethod.Put:
+                    case HttpMethod m when m == HttpMethod.Put:
                         endpoint = routeBuilder.MapPut(GetUrlForMvcRouting(ent), requestDelegate);
                         break;
-                    case HttpMethod.Post:
+                    case HttpMethod m when m ==  HttpMethod.Post:
                         endpoint = routeBuilder.MapPost(GetUrlForMvcRouting(ent), requestDelegate);
                         break;
-                    case HttpMethod.Delete:
+                    case HttpMethod m when m ==  HttpMethod.Delete:
                         endpoint = routeBuilder.MapDelete(GetUrlForMvcRouting(ent), requestDelegate);
                         break;
-                    case HttpMethod.Patch:
+                    case HttpMethod m when m ==  HttpMethod.Patch:
                         endpoint = routeBuilder.Map(GetUrlForMvcRouting(ent), context =>
                         {
                             if (context.Request.Method.ToUpper() == "PATCH")
