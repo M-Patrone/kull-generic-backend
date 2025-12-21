@@ -17,10 +17,4 @@ public class SwaggerFromSPOptions
     /// True to add all fields of the parameter to the required array
     /// </summary>
     public bool ParameterFieldsAreRequired { get; set; } = false;
-
-    /// <summary>
-    /// Uses x-nullable for nullability and type=file
-    /// </summary>
-    public bool UseSwagger2 { get; set; } = false;
-
 }

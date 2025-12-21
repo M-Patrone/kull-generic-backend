@@ -1,6 +1,8 @@
 using Kull.Data;
 using Kull.DatabaseMetadata;
 using Kull.GenericBackend.Common;
+using Kull.GenericBackend.Utils;
+
 #if NET48
 using HttpContext = System.Web.HttpContextBase;
 #else
@@ -35,7 +37,7 @@ public class TableValuedParameter : WebApiParameter
     public override OpenApiSchema GetSchema()
     {
         OpenApiSchema schema = new OpenApiSchema();
-        schema.Type = "object";
+        schema.Type = JsonSchemaType.Object;
         var names = namingMappingHandler
             .GetNames(fields.Select(f => f.Name))
             .GetEnumerator();
@@ -44,12 +46,14 @@ public class TableValuedParameter : WebApiParameter
         {
 
             OpenApiSchema property = new OpenApiSchema();
-            property.Type = prop.DbType.JsType;
+            property.Type = JsonHelper.ConvertJsType2JsonSchemaType(prop.DbType.JsType);
             if (prop.DbType.JsFormat != null)
             {
                 property.Format = prop.DbType.JsFormat;
             }
-            property.Nullable = prop.IsNullable;
+            if(prop.IsNullable){
+                property.Type = property.Type | JsonSchemaType.Null;
+            }
             names.MoveNext();
             schema.Properties.Add(names.Current, property);
 

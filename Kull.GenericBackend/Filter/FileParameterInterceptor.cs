@@ -50,7 +50,7 @@ public class FileParameterInterceptor : IParameterInterceptor
                 apiParams.Add(new Parameters.FileValueParameter(fileParameter.Key,
                     existing.Parameter.SqlName!));
             }
-            apiParams.Add(new Parameters.FileDescriptionParameter(fileParameter.Key, this.options.UseSwagger2));
+            apiParams.Add(new Parameters.FileDescriptionParameter(fileParameter.Key));
         }
     }
 }

@@ -1,4 +1,5 @@
 using Kull.GenericBackend.Config;
+using Kull.GenericBackend.Utils;
 using Microsoft.OpenApi;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,6 @@ public record Method
     /// The Http Method
     /// </summary>
     public HttpMethod HttpMethod { get; init; }
-
 
     public Data.DBObjectName DbObject { get; init; }
 
@@ -89,7 +89,7 @@ public record Method
 
     internal static Method GetFromConfig(string key, object value)
     {
-        if (!Enum.TryParse(key, true, out HttpMethod operationType))
+        if(HttpMethodHelper.TryParseHttpMethod(key, out HttpMethod? operationType))
         {
             throw new ArgumentException("Key must be a Http Method");
         }

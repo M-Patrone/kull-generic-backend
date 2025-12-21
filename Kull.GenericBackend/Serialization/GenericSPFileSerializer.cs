@@ -184,7 +184,7 @@ public class GenericSPFileSerializer : IGenericSPSerializer
         responses.Add("200", new OpenApiResponse()
         {
             Description = "A binary file",
-            Content = new Dictionary<string, OpenApiMediaType>(){
+            Content = new Dictionary<string, IOpenApiMediaType>(){
                         {
                             DefaultContentType,
                             new OpenApiMediaType()
@@ -193,7 +193,7 @@ public class GenericSPFileSerializer : IGenericSPSerializer
                                 {
                                     
                                     // https://swagger.io/docs/specification/describing-responses/
-                                    Type = this.options.UseSwagger2 ? "file" : "string",
+                                    Type = JsonSchemaType.String,
                                     Format =  "binary"
                                 }
                             }

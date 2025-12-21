@@ -160,12 +160,12 @@ public class DatabaseOperations : IOpenApiDocumentTransforer
                         dataToWrite = dataToWrite.Where(dw => !method.IgnoreFields.Contains(dw.Name, StringComparer.OrdinalIgnoreCase)).ToArray();
                     }
                     WriteJsonSchema(resultSchema, dataToWrite, namingMappingHandler, options.ResponseFieldsAreRequired,
-                        options.UseSwagger2, jsonFields: method.JsonFields);
+                        jsonFields: method.JsonFields);
                 }
                 catch (Exception err)
                 {
                     WriteJsonSchema(resultSchema, Array.Empty<SqlFieldDescription>(), namingMappingHandler, options.ResponseFieldsAreRequired,
-                        options.UseSwagger2, jsonFields: method.JsonFields);
+                         jsonFields: method.JsonFields);
                     logger.LogError($"Error getting result set for {method.DbObject}. \r\n{err.ToString()}");
                 }
                 swaggerDoc.Components.Schemas.Add(typeName, resultSchema);
@@ -194,15 +194,14 @@ public class DatabaseOperations : IOpenApiDocumentTransforer
                 if (parameters.Any())
                 {
                     OpenApiSchema parameterSchema = new OpenApiSchema();
-                    WriteJsonSchema(parameterSchema, parameters, options.ParameterFieldsAreRequired,
-                            options.UseSwagger2);
+                    WriteJsonSchema(parameterSchema, parameters, options.ParameterFieldsAreRequired);
                     swaggerDoc.Components.Schemas.Add(method.Value.ParameterSchemaName ?? codeConvention.GetParameterObjectName(ent, method.Value),
                         parameterSchema);
                 }
                 if (allParameters.outputParameters.Any())
                 {
                     OpenApiSchema outputSchema = new OpenApiSchema();
-                    WriteJsonSchema(outputSchema, allParameters.outputParameters, namingMappingHandler, true, options.UseSwagger2);
+                    WriteJsonSchema(outputSchema, allParameters.outputParameters, namingMappingHandler, true );
                     swaggerDoc.Components.Schemas.Add(codeConvention.GetOutputObjectTypeName(method.Value),
                         outputSchema);
                 }
@@ -224,8 +223,7 @@ public class DatabaseOperations : IOpenApiDocumentTransforer
     }
 
     private void WriteJsonSchema(OpenApiSchema parameterSchema, IReadOnlyCollection<Parameters.WebApiParameter> parameters,
-        bool addRequired,
-        bool forSwagger2)
+        bool addRequired)
     {
         parameterSchema.Type = "object";
         if (parameterSchema.Required == null && addRequired)
@@ -233,10 +231,7 @@ public class DatabaseOperations : IOpenApiDocumentTransforer
         foreach (var item in parameters)
         {
             var prop = item.GetSchema();
-            if (forSwagger2 && prop.Nullable)
-            {
-                prop.AddExtension("x-nullable", new OpenApiBoolean(true));
-            }
+
             parameterSchema.Properties.Add(
                  item.WebApiName,
                  prop);
@@ -250,7 +245,6 @@ public class DatabaseOperations : IOpenApiDocumentTransforer
         IEnumerable<SqlFieldDescription> props,
         NamingMappingHandler namingMappingHandler,
         bool addRequired,
-        bool forSwagger2,
         IReadOnlyCollection<string> jsonFields)
     {
         schema.Type = "object";
@@ -278,10 +272,6 @@ public class DatabaseOperations : IOpenApiDocumentTransforer
                 }
             }
             property.Nullable = prop.IsNullable;
-            if (forSwagger2 && prop.IsNullable)
-            {
-                property.AddExtension("x-nullable", new OpenApiBoolean(true));
-            }
             names.MoveNext();
             schema.Properties.Add(names.Current, property);
             if (addRequired)
@@ -293,7 +283,7 @@ public class DatabaseOperations : IOpenApiDocumentTransforer
         IEnumerable<OutputParameter> props,
         NamingMappingHandler namingMappingHandler,
         bool addRequired,
-        bool forSwagger2)
+)
     {
         schema.Type = "object";
         var names = namingMappingHandler.GetNames(props.Select(p => p.SqlName))
@@ -312,10 +302,7 @@ public class DatabaseOperations : IOpenApiDocumentTransforer
                 property.Format = prop.DbType.JsFormat;
             }
             property.Nullable = true;
-            if (forSwagger2)
-            {
-                property.AddExtension("x-nullable", new OpenApiBoolean(true));
-            }
+
             names.MoveNext();
             schema.Properties.Add(names.Current, property);
             if (addRequired)

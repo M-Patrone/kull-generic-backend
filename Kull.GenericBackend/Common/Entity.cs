@@ -7,6 +7,7 @@ using Newtonsoft.Json.Serialization;
 using Microsoft.OpenApi;
 using Kull.GenericBackend.Config;
 using System.Net.Http;
+using Kull.GenericBackend.Utils;
 
 namespace Kull.GenericBackend.Common;
 
@@ -115,7 +116,7 @@ public class Entity
 
     public Method GetMethod(string httpMethod)
     {
-        if (!Enum.TryParse(httpMethod, true, out HttpMethod operationType))
+        if(HttpMethodHelper.TryParseHttpMethod(httpMethod, out HttpMethod operationType))
         {
             throw new ArgumentException("Key must be a Http Method");
         }
