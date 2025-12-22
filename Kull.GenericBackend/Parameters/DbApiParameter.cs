@@ -70,24 +70,18 @@ public class DbApiParameter : WebApiParameter
     public override OpenApiSchema GetSchema()
     {
         OpenApiSchema property = new OpenApiSchema();
-        property.Type = this.DbType.JsType;
+        property.Type = JsonHelper.ConvertJsType2JsonSchemaType(this.DbType.JsType);
         if (this.DbType.JsFormat != null)
         {
             property.Format = this.DbType.JsFormat;
         }
-        property.Nullable = this.IsNullable;
+        if(this.IsNullable)
+            property.Type = property.Type | JsonSchemaType.Null;
 
         if (this.UserDefinedType != null)
         {
             property.UniqueItems = false;
-            property.Items = new OpenApiSchema()
-            {
-                Reference = new OpenApiReference()
-                {
-                    Type = ReferenceType.Schema,
-                    Id = TableParameter!.WebApiName
-                }
-            };
+            property.Items = new OpenApiSchemaReference(TableParameter!.WebApiName); 
         }
         return property;
     }

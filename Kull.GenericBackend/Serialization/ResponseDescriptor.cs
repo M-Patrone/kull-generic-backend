@@ -22,7 +22,7 @@ public class ResponseDescriptor
             bool wrapResult)
     {
 
-        OpenApiSchema schema;
+        IOpenApiSchema schema;
         var outputObjectName = context.OutputObjectTypeName;
         var resultTypeName = context.ResultTypeName;
         if (wrapResult)
@@ -57,28 +57,28 @@ public class ResponseDescriptor
     }
     public virtual OpenApiSchema GetAdditionalItemsSchema() => new OpenApiSchema()
     {
-        Type = "array",
+        Type = JsonSchemaType.Array,
         Items = new OpenApiSchema()
         {
-            Type = "array",
+            Type = JsonSchemaType.Array,
             Items = new OpenApiSchema()
             {
-                Type = "object",
+                Type = JsonSchemaType.Object,
                 AdditionalPropertiesAllowed = true
             }
         }
     };
 
-    public virtual OpenApiSchema GetWrappedSchema(
-      OpenApiSchema firstResultSchema,
+    public virtual IOpenApiSchema GetWrappedSchema(
+      IOpenApiSchema firstResultSchema,
       string? outputObjectName)
     {
 
         OpenApiSchema schema = new OpenApiSchema()
         {
-            Type = "object",
+            Type = JsonSchemaType.Object,
             Required = new HashSet<string>(new string[] { codeConvention.FirstResultKey }),
-            Properties = new Dictionary<string, OpenApiSchema>()
+            Properties = new Dictionary<string, IOpenApiSchema>()
                    {
                        {  codeConvention.FirstResultKey, firstResultSchema},
                         { codeConvention.OtherResultsKey,  GetAdditionalItemsSchema() }
@@ -86,21 +86,14 @@ public class ResponseDescriptor
         };
         if (outputObjectName != null)
         {
-            schema.Properties.Add(codeConvention.OutputParametersKey, new OpenApiSchema()
-            {
-                Reference = new OpenApiReference()
-                {
-                    Type = ReferenceType.Schema,
-                    Id = outputObjectName
-                }
-            });
+            schema.Properties.Add(codeConvention.OutputParametersKey, new OpenApiSchemaReference(outputObjectName));
             schema.Required.Add(codeConvention.OutputParametersKey);
         }
 
         return schema;
     }
 
-    public virtual OpenApiSchema GetWrappedSchema(
+    public virtual IOpenApiSchema GetWrappedSchema(
         string resultTypeName,
         string? outputObjectName,
             bool firstItemOnly)
@@ -109,20 +102,13 @@ public class ResponseDescriptor
             outputObjectName);
     }
 
-    public virtual OpenApiSchema GetResultReference(string resultTypeName) => new OpenApiSchema()
-    {
-        Reference = new OpenApiReference()
-        {
-            Type = ReferenceType.Schema,
-            Id = resultTypeName
-        }
-    };
+    public virtual IOpenApiSchema GetResultReference(string resultTypeName) => new OpenApiSchemaReference(resultTypeName);
 
-    public virtual OpenApiSchema GetArrayOfResult(string resultTypeName)
+    public virtual IOpenApiSchema GetArrayOfResult(string resultTypeName)
     {
         return new OpenApiSchema()
         {
-            Type = "array",
+            Type = JsonSchemaType.Array,
             Xml = new OpenApiXml()
             {
                 Name = "table"

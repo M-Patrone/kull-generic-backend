@@ -76,7 +76,7 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
         var dbConnection = scope.ServiceProvider.GetRequiredService<DbConnection>();
         if (swaggerDoc.Paths == null) swaggerDoc.Paths = new OpenApiPaths();
         if (swaggerDoc.Components == null) swaggerDoc.Components = new OpenApiComponents();
-        if (swaggerDoc.Components.Schemas == null) swaggerDoc.Components.Schemas = new Dictionary<string, OpenApiSchema>();
+        if (swaggerDoc.Components.Schemas == null) swaggerDoc.Components.Schemas = new Dictionary<string, IOpenApiSchema>();
 
         foreach (var ent in entities)
         {
@@ -172,7 +172,7 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
     private void WriteJsonSchema(OpenApiSchema parameterSchema, IReadOnlyCollection<Parameters.WebApiParameter> parameters,
         bool addRequired)
     {
-        parameterSchema.Type = "object";
+        parameterSchema.Type = JsonSchemaType.Object;
         if (parameterSchema.Required == null && addRequired)
             parameterSchema.Required = new HashSet<string>();
         foreach (var item in parameters)
@@ -194,7 +194,7 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
         bool addRequired,
         IReadOnlyCollection<string> jsonFields)
     {
-        schema.Type = "object";
+        schema.Type = JsonSchemaType.Object; 
         var names = namingMappingHandler.GetNames(props.Select(p => p.Name))
             .GetEnumerator();
         if (schema.Xml == null) schema.Xml = new OpenApiXml();
@@ -207,18 +207,19 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
             OpenApiSchema property = new OpenApiSchema();
             if (jsonFields.Contains(prop.Name, StringComparer.OrdinalIgnoreCase))
             {
-                property.Type = "object";
+                property.Type = JsonSchemaType.Object;
                 // property.AdditionalPropertiesAllowed = true;// Not needed as per spec https://swagger.io/docs/specification/data-models/data-types/
             }
             else
             {
-                property.Type = prop.DbType.JsType;
+                property.Type = JsonHelper.ConvertJsType2JsonSchemaType(prop.DbType.JsType);
                 if (prop.DbType.JsFormat != null)
                 {
                     property.Format = prop.DbType.JsFormat;
                 }
             }
-            property.Nullable = prop.IsNullable;
+            if(prop.IsNullable)
+                property.Type = property.Type | JsonSchemaType.Null;
             
             names.MoveNext();
             schema.Properties.Add(names.Current, property);
@@ -233,7 +234,7 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
         bool addRequired
         )
     {
-        schema.Type = "object";
+        schema.Type = JsonSchemaType.Object;
         var names = namingMappingHandler.GetNames(props.Select(p => p.SqlName))
             .GetEnumerator();
         if (schema.Xml == null) schema.Xml = new OpenApiXml();
@@ -244,12 +245,11 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
         {
 
             OpenApiSchema property = new OpenApiSchema();
-            property.Type = prop.DbType.JsType;
+            property.Type = JsonHelper.ConvertJsType2JsonSchemaType(prop.DbType.JsType) | JsonSchemaType.Null;
             if (prop.DbType.JsFormat != null)
             {
                 property.Format = prop.DbType.JsFormat;
             }
-            property.Nullable = true;
             
             names.MoveNext();
             schema.Properties.Add(names.Current, property);
