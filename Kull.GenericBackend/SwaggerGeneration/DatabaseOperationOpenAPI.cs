@@ -263,14 +263,12 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
     private async Task WriteBodyPath(DbConnection dbConnection, OpenApiOperation operation, Entity entity, HttpMethod operationType, Method method)
     {
         if (operation.Tags == null)
-            operation.Tags = new List<OpenApiTag>();
-        operation.Tags.Add(new OpenApiTag()
-        {
-            Name =
+            operation.Tags = new HashSet<OpenApiTagReference>();
+        operation.Tags.Add(new OpenApiTagReference(
             method.Tag != null ? method.Tag :
             entity.Tag != null ? entity.Tag :
             codeConvention.GetTag(entity, method)
-        });
+        ));
 
         var operationId = method.OperationId;
         if (method.OperationId == null)
@@ -278,8 +276,9 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
             operationId = codeConvention.GetOperationId(entity, method);
         }
         operation.OperationId = operationId;
+        //TODO: https://github.com/microsoft/OpenAPI.NET/releases/tag/2.0.0-preview1
         operation.AddExtension("x-dbobject-type", new OpenApiString(method.DbObjectType.ToString()));
-        operation.AddExtension("x-dbobject-name", new OpenApiString(method.DbObject.ToString()));
+        operation.AddExtension("x-dbobject-name", method.DbObject.ToString());
         if (method.OperationName != null || method.OperationId == null)
         {
             operation.AddExtension("x-operation-name", new OpenApiString(method.OperationName ?? codeConvention.GetOperationName(entity, method)));
