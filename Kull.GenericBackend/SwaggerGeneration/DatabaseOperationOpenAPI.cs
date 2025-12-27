@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,7 +24,7 @@ using System.Threading.Tasks;
 namespace Kull.GenericBackend.SwaggerGeneration;
 //https://github.com/dotnet/dotnet/blob/main/src/aspnetcore/src/OpenApi/src/Transformers/IOpenApiDocumentTransformer.cs
 //seems to have problem with NET8
-public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer 
+public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
 {
     private readonly IReadOnlyCollection<Entity> entities;
     private readonly SPMiddlewareOptions sPMiddlewareOptions;
@@ -42,7 +43,7 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
      SPMiddlewareOptions sPMiddlewareOptions,
      SwaggerFromSPOptions options,
      SqlHelper sqlHelper,
-     ILogger<DatabaseOperationOpenAPI   > logger,
+     ILogger<DatabaseOperationOpenAPI> logger,
      ParameterProvider parametersProvider,
      SerializerResolver serializerResolver,
      NamingMappingHandler namingMappingHandler,
@@ -153,7 +154,7 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
                 if (parameters.Any())
                 {
                     OpenApiSchema parameterSchema = new OpenApiSchema();
-                    WriteJsonSchema(parameterSchema, parameters, options.ParameterFieldsAreRequired  );
+                    WriteJsonSchema(parameterSchema, parameters, options.ParameterFieldsAreRequired);
                     swaggerDoc.Components.Schemas.Add(method.Value.ParameterSchemaName ?? codeConvention.GetParameterObjectName(ent, method.Value),
                         parameterSchema);
                 }
@@ -178,7 +179,7 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
         foreach (var item in parameters)
         {
             var prop = item.GetSchema();
-            
+
             parameterSchema.Properties.Add(
                  item.WebApiName,
                  prop);
@@ -194,7 +195,7 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
         bool addRequired,
         IReadOnlyCollection<string> jsonFields)
     {
-        schema.Type = JsonSchemaType.Object; 
+        schema.Type = JsonSchemaType.Object;
         var names = namingMappingHandler.GetNames(props.Select(p => p.Name))
             .GetEnumerator();
         if (schema.Xml == null) schema.Xml = new OpenApiXml();
@@ -218,9 +219,9 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
                     property.Format = prop.DbType.JsFormat;
                 }
             }
-            if(prop.IsNullable)
+            if (prop.IsNullable)
                 property.Type = property.Type | JsonSchemaType.Null;
-            
+
             names.MoveNext();
             schema.Properties.Add(names.Current, property);
             if (addRequired)
@@ -250,7 +251,7 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
             {
                 property.Format = prop.DbType.JsFormat;
             }
-            
+
             names.MoveNext();
             schema.Properties.Add(names.Current, property);
             if (addRequired)
@@ -276,12 +277,14 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
             operationId = codeConvention.GetOperationId(entity, method);
         }
         operation.OperationId = operationId;
-        //TODO: https://github.com/microsoft/OpenAPI.NET/releases/tag/2.0.0-preview1
-        operation.AddExtension("x-dbobject-type", new OpenApiString(method.DbObjectType.ToString()));
-        operation.AddExtension("x-dbobject-name", method.DbObject.ToString());
+        //TODO: 
+        operation.AddExtension("x-dbobject-type", new JsonNodeExtension(method.DbObjectType.ToString()));
+        //operation.AddExtension("x-dbobject-name", JsonValue.Create(method.DbObject.ToString()));
+        //Solution: https://github.com/microsoft/OpenAPI.NET/blob/43c75a90746344fcc975611100e995fe4045edf0/docs/upgrade-guide-2.md?plain=1#L31
+        operation.Extensions.Add("x-dbobject-name", new JsonNodeExtension(method.DbObject.ToString()));
         if (method.OperationName != null || method.OperationId == null)
         {
-            operation.AddExtension("x-operation-name", new OpenApiString(method.OperationName ?? codeConvention.GetOperationName(entity, method)));
+            operation.AddExtension("x-operation-name", new JsonNodeExtension(method.OperationName ?? codeConvention.GetOperationName(entity, method)));
         }
         IGenericSPSerializer? serializer = serializerResolver.GetSerialializerOrNull(null, entity, method);
 
@@ -299,22 +302,21 @@ public class DatabaseOperationOpenAPI : IOpenApiDocumentTransformer
         if (operationType != HttpMethod.Get && inputParameters.Any(p => p.WebApiName != null && !entity.ContainsPathParameter(p.WebApiName)))
         {
             if (operation.RequestBody == null) operation.RequestBody = new OpenApiRequestBody();
-            operation.RequestBody.Required = true;
+            if (operation is OpenApiOperation)
+            {
+                //interface only readonly
+                ((OpenApiRequestBody)operation.RequestBody).Required = true;
+            }
             operation.RequestBody.Description = "Parameters for " + method.DbObject.ToString();
             bool requireFormData = inputParameters.Any(p => p.RequiresFormData);
+
             operation.RequestBody.Content.Add(requireFormData ? "multipart/form-data" : "application /json", new OpenApiMediaType()
             {
-                Schema = new OpenApiSchema()
-                {
-                    Reference = new OpenApiReference()
-                    {
-                        Type = ReferenceType.Schema,
-                        Id = method.ParameterSchemaName ?? codeConvention.GetParameterObjectName(entity, method)
-                    }
-                }
+                Schema = new OpenApiSchemaReference(method.ParameterSchemaName ?? codeConvention.GetParameterObjectName(entity, method))
             });
+
         }
-        if (operation.Parameters == null) operation.Parameters = new List<OpenApiParameter>();
+        if (operation.Parameters == null) operation.Parameters = new List<IOpenApiParameter>();
         if (operationType == HttpMethod.Get)
         {
             foreach (var item in inputParameters.Where(p => p.WebApiName != null && !entity.ContainsPathParameter(p.WebApiName)))
