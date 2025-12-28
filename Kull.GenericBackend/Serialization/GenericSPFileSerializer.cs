@@ -184,7 +184,7 @@ public class GenericSPFileSerializer : IGenericSPSerializer
         responses.Add("200", new OpenApiResponse()
         {
             Description = "A binary file",
-            Content = new Dictionary<string, IOpenApiMediaType>(){
+            Content = new Dictionary<string, OpenApiMediaType>(){
                         {
                             DefaultContentType,
                             new OpenApiMediaType()
