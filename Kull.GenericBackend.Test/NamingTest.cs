@@ -19,6 +19,7 @@ namespace Kull.GenericBackend.Test
 
         private static void TestNaming(string url, string expected)
         {
+            //MPa added implicit conversion
             Method method = new HttpMethod("Get");
             var ent = new Entity(url, new Dictionary<HttpMethod, Method>()
             {

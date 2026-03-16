@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+using System.Net.Http;
 namespace Kull.GenericBackend.Test
 {
     [TestClass]
@@ -21,8 +21,8 @@ namespace Kull.GenericBackend.Test
             Assert.AreEqual(8, provider.Entities.Count);
             var petSearch = provider.Entities.First(e => e.ToString().StartsWith("/Pet/search", StringComparison.CurrentCultureIgnoreCase));
             Assert.AreEqual(1, petSearch.Methods.Count);
-            Assert.AreEqual("spSearchPets", petSearch.Methods[Microsoft.OpenApi.Models.OperationType.Get].DbObject);
-            Assert.AreEqual(360, petSearch.Methods[Microsoft.OpenApi.Models.OperationType.Get].CommandTimeout);
+            Assert.AreEqual("spSearchPets", petSearch.Methods[HttpMethod.Get].DbObject);
+            Assert.AreEqual(360, petSearch.Methods[HttpMethod.Get].CommandTimeout);
         }
     }
 }

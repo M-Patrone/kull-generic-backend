@@ -89,9 +89,9 @@ public record Method
 
     internal static Method GetFromConfig(string key, object value)
     {
-        if(HttpMethodHelper.TryParseHttpMethod(key, out HttpMethod? operationType))
+        if (!HttpMethodHelper.TryParseHttpMethod(key, out HttpMethod? operationType))
         {
-            throw new ArgumentException("Key must be a Http Method");
+            throw new ArgumentException($"Key must be a Http Method for '{key}'");
         }
         if (value is string s)
             return new Method(operationType, s);
@@ -144,6 +144,15 @@ public record Method
     public override string ToString()
     {
         return HttpMethod + " (" + DbObject + ")";
+    }
+
+    ///<summary>
+    ///Implicit opertor to convert Sytem.Http.HttpMethod to Method. 
+    ///Ensures smooth transition from old version
+    /// </summary>
+    public static implicit operator Method(HttpMethod method)
+    {
+        return new Kull.GenericBackend.Common.Method(method, "");
     }
 
 }
