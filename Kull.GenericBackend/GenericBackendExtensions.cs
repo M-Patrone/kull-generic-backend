@@ -48,7 +48,7 @@ public static class SwashbuckleExtensions
 
 }
 #endif
-#if NET9_0
+#if NET9_0_OR_GREATER 
 
 public static class OpenApiServiceCollectionExtensions
 {

@@ -42,7 +42,7 @@ public abstract class TestStartupBase
             })
             .ConfigureOpenApiGeneration(o =>
             {
-                o.UseSwagger2 = this.UseSwaggerV2;
+                //o.UseSwagger2 = this.UseSwaggerV2; // does not support any more openapi v2
                 o.PersistResultSets = true;
 
                 ConfigureOpenApi(o);

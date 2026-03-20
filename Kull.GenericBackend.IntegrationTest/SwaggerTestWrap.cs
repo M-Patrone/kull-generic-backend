@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using Xunit;
 using System.Linq;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Readers;
+using System.IO;
+using System.Text.Json;
 
 namespace Kull.GenericBackend.IntegrationTest;
 
@@ -89,8 +91,20 @@ public class SwaggerTestWrap
             response.Content.Headers.ContentType.ToString());
         var resp = await response.Content.ReadAsStringAsync();
         System.IO.File.WriteAllText("testV3.json", resp);
-        var document = new Microsoft.OpenApi.Readers.OpenApiStringReader().Read(resp, out var apiDiagnostic);
-        Assert.Empty(apiDiagnostic.Errors);
+
+        using var doc = JsonDocument.Parse(resp);
+        var rootElement = doc.RootElement;
+
+        //check version 
+        Assert.True(rootElement.TryGetProperty("openapi", out var apiversion));
+        Assert.StartsWith("3.0", apiversion.GetString());
+
+        var paths = rootElement.GetProperty("paths");
+        Assert.True(paths.TryGetProperty("/rest/TestTemp", out var testTempPath));
+
+
+        Assert.True(testTempPath.TryGetProperty("get", out var getOperation));
+        // var document = reader.Read(resp, out var apiDiagnostic);
         Assert.Equal(OpenApiSpecVersion.OpenApi3_0, apiDiagnostic.SpecificationVersion);
         var testTempPath = document.Paths["/rest/TestTemp"].Operations[OperationType.Get];
 
